@@ -1,75 +1,121 @@
-# React + TypeScript + Vite
+# HireFlow Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React frontend for **HireFlow**, a job portal for candidates, recruiters and admins.
 
-Currently, two official plugins are available:
+Backend repository: [hireflow-backend](https://github.com/ANJ-NISH/hireflow-backend.git)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Everyone**
+- Landing page with real featured jobs and a hero search that opens the listing pre-filtered
+- Job listing with debounced search, filters (title, location, work mode, employment type, skill) and pagination
+- Job details page, registration and login, email verification and password reset
 
-## Expanding the ESLint configuration
+**Candidates**
+- Profile builder: skills, experience, education, certifications, projects and languages
+- Resume manager with upload progress, primary resume and delete
+- Apply modal with resume picker and cover letter
+- Application tracker with a pipeline progress bar, withdraw option and saved jobs
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Recruiters**
+- Company profile and a job form that guides you to create a company first
+- Job management: publish, pause, resume, close and delete
+- Applicant review: change status, private notes, interview scheduling and resume download
+- Candidate search and read-only candidate profiles
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**Admins**
+- Dashboard, plus user, company, job and complaint management
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+**Notifications**
+- Bell icon with an unread badge, a dropdown of recent items, and a full notifications page
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Tech stack
 
+React, TypeScript, Vite, Tailwind CSS v4, React Router. No UI library: all components are hand-built. Data fetching uses plain `fetch` wrapped in a small API client.
+
+## How authentication works on the client
+
+- The access token lives **in memory only**, never in `localStorage`.
+- The refresh token is an `httpOnly` cookie managed by the browser, which JavaScript can't read.
+- On page load, `initAuth()` silently restores the session from the cookie.
+- `apiFetch()` attaches the token. On a 401 it refreshes once and retries the request.
+- Concurrent refresh calls share one in-flight request, which avoids a race condition with rotating refresh tokens. The user is logged out only on a real 401, not on rate limits or network errors.
+
+## Other implementation notes
+
+- **Direct uploads:** resumes go from the browser straight to storage using a presigned URL, via `XMLHttpRequest` so upload progress can be shown.
+- **Notifications:** the bell polls a lightweight unread-count endpoint every 45 seconds, pausing while the tab is hidden. The bell and the notifications page stay in sync through a browser event instead of a shared store.
+- **Search from the URL:** the hero search and popular tags pass filters as query parameters, so listing results are shareable and survive a refresh.
+- **Design tokens:** colors and fonts are defined once in `src/index.css` using Tailwind v4's `@theme`.
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20 or newer
+- The [backend](https://github.com/ANJ-NISH/hireflow-backend.git) running on port 5000
+
+### Setup
+
+```bash
+git clone https://github.com/<your-username>/hireflow-frontend.git
+cd hireflow-frontend
+npm install
+cp .env.example .env        # Windows: copy .env.example .env
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open http://localhost:5173.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Environment variable
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Variable | Description |
+|---|---|
+| `VITE_API_URL` | Base URL of the API, for example `http://localhost:5000` |
+
+Anything in a `VITE_` variable is bundled into the public site, so never put secrets there.
+
+### Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Start the dev server |
+| `npm run build` | Type-check and build for production |
+| `npm run preview` | Preview the production build locally |
+
+## Routes
+
+| Path | Page | Who |
+|---|---|---|
+| `/` | Home | Everyone |
+| `/jobs`, `/jobs/:id` | Job listing and details | Everyone |
+| `/login`, `/register` | Authentication | Everyone |
+| `/forgot-password`, `/reset-password`, `/verify-email` | Account recovery and verification | Everyone |
+| `/notifications` | Notifications | Logged-in users |
+| `/candidate/profile`, `/candidate/applications`, `/candidate/saved-jobs` | Candidate area | Candidate |
+| `/recruiter/company`, `/recruiter/jobs`, `/recruiter/jobs/new` | Recruiter area | Recruiter |
+| `/recruiter/jobs/:jobId/applicants` | Applicants for a job | Recruiter |
+| `/recruiter/candidates/search`, `/recruiter/candidates/:userId` | Candidate search and profile | Recruiter |
+| `/admin`, `/admin/users`, `/admin/companies`, `/admin/jobs`, `/admin/complaints` | Admin area | Admin |
+
+## Project structure
 
 ```
+src/
+  components/   Reusable UI (Navbar, JobCard, ApplyModal, NotificationBell, ...)
+  pages/        Route components, grouped into admin/, candidate/ and recruiter/
+  lib/
+    auth.ts     Token handling, silent refresh and the apiFetch wrapper
+    api/        Typed API functions, one file per backend area
+  routes/       Route definitions
+  index.css     Tailwind setup and theme tokens
+```
+
+## Status and limitations
+
+Pages are not yet wrapped in client-side route guards, so a logged-out visitor can open a restricted URL and see an empty page shell. Every request is still checked by the API, so no data is exposed. There are no automated tests yet, notifications refresh by polling, and candidates can't yet see their scheduled interviews inside the app (they see the time in the notification and the email).
+
+## Author
+
+Anurag Joshi
