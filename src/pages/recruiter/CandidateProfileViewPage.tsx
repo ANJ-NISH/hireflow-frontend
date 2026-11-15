@@ -13,11 +13,15 @@ export default function CandidateProfileViewPage() {
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [contactVisible, setContactVisible] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
     getCandidateProfileByUserId(userId)
-      .then(({ profile }) => setProfile(profile))
+      .then(({ profile, contactVisible }) => {
+        setProfile(profile);
+        setContactVisible(contactVisible);
+      })
       .catch((err) => setErrorMessage(err.message || "Profile not found"))
       .finally(() => setLoading(false));
   }, [userId]);
@@ -59,6 +63,11 @@ export default function CandidateProfileViewPage() {
           {(profile.location || profile.phone) && (
             <p className="mt-1 text-sm text-ink-soft">
               {[profile.location, profile.phone].filter(Boolean).join(" · ")}
+            </p>
+          )}
+          {!contactVisible && (
+            <p className="mt-2 text-xs text-ink-soft">
+              Contact details are shared once this candidate applies to one of your jobs.
             </p>
           )}
           {profile.bio && <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-ink-soft">{profile.bio}</p>}

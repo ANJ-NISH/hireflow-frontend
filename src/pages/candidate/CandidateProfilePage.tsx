@@ -61,6 +61,7 @@ export default function CandidateProfilePage() {
   const [languagesInput, setLanguagesInput] = useState("");
   const [savingBasics, setSavingBasics] = useState(false);
   const [totalExperienceYears, setTotalExperienceYears] = useState("");
+  const [isSearchable, setIsSearchable] = useState(false);
 
   // Which "add" panel is open, if any
   const [openPanel, setOpenPanel] = useState<"experience" | "education" | "certification" | "project" | null>(null);
@@ -69,6 +70,7 @@ export default function CandidateProfilePage() {
     getMyProfile()
       .then(({ profile }) => {
         setProfile(profile);
+        setIsSearchable(profile.isSearchable ?? false);
         setHeadline(profile.headline || "");
         setBio(profile.bio || "");
         setLocation(profile.location || "");
@@ -97,6 +99,7 @@ export default function CandidateProfilePage() {
         bio,
         location,
         phone,
+        isSearchable,
         skills: skillsInput.split(",").map((s) => s.trim()).filter(Boolean),
         languages: languagesInput.split(",").map((s) => s.trim()).filter(Boolean),
         totalExperienceYears: totalExperienceYears ? Number(totalExperienceYears) : undefined,
@@ -225,6 +228,23 @@ export default function CandidateProfilePage() {
                 className="w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
               />
             </label>
+
+
+            <label className="flex items-start gap-3 rounded-xl border border-line bg-surface p-4">
+            <input
+              type="checkbox"
+              checked={isSearchable}
+              onChange={(e) => setIsSearchable(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-primary"
+            />
+            <span>
+              <span className="block text-sm font-medium text-ink">Let recruiters find me in candidate search</span>
+              <span className="mt-0.5 block text-xs text-ink-soft">
+                Your name, headline, skills and location become searchable. Your phone number and resume are only
+                shared when you apply to a recruiter's job.
+              </span>
+            </span>
+          </label>
           </div>
 
           {errorMessage && (

@@ -22,6 +22,14 @@ export type Application = {
   updatedAt: string;
 };
 
+export type MyInterview = {
+  id: string;
+  scheduledAt: string;
+  mode: "ONLINE" | "ONSITE" | "PHONE";
+  locationOrUrl?: string | null;
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
+};
+
 export type MyApplication = Application & {
   job: {
     id: string;
@@ -31,6 +39,7 @@ export type MyApplication = Application & {
     status: string;
     company: { name: string; logoUrl?: string | null };
   };
+  interviews: MyInterview[];
 };
 
 export type Applicant = Application & {

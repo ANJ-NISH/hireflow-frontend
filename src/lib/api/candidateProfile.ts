@@ -52,6 +52,7 @@ export type CandidateProfile = {
   certifications: Certification[];
   projects: Project[];
   totalExperienceYears?: number | null;
+  isSearchable?: boolean;
 };
 
 export type ProfileInput = Partial<{
@@ -63,6 +64,7 @@ export type ProfileInput = Partial<{
   languages: string[];
   resumeUrl: string;
   totalExperienceYears: number;
+  isSearchable: boolean;
 }>;
 
 export type ExperienceInput = Omit<Experience, "id">;
@@ -111,7 +113,6 @@ export function deleteProject(id: string) {
   return apiRequest<null>(`/api/candidates/me/projects/${id}`, { method: "DELETE" });
 }
 
-// Recruiter-side lookup
 export function getCandidateProfileByUserId(userId: string) {
-  return apiRequest<{ profile: CandidateProfile }>(`/api/candidates/${userId}`);
+  return apiRequest<{ profile: CandidateProfile; contactVisible: boolean }>(`/api/candidates/${userId}`);
 }

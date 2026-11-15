@@ -9,7 +9,7 @@ export type CandidateSearchResult = {
   skills: string[];
   languages: string[];
   totalExperienceYears?: number | null;
-  user: { id: string; name: string; email: string };
+  user: { id: string; name: string;};
 };
 
 export type ApplicationNote = {

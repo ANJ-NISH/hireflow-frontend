@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import AuthLayout from "../components/AuthLayout";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { setAuth } from "../lib/auth";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -13,6 +13,11 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from;
+
+  const destination = from && from.startsWith("/") && !from.startsWith("//") ? from : "/";
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -42,7 +47,7 @@ export default function LoginPage() {
       const { accessToken, user } = data.data;
       setAuth(accessToken, user);
 
-      navigate("/");
+      navigate(destination, { replace: true });
     } catch (err) {
       setErrorMessage("Could not reach the server. Please check your connection.");
     } finally {
