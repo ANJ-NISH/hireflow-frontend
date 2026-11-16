@@ -5,6 +5,7 @@ import JobCard from "../components/JobCard";
 import { searchJobs, type WorkMode, type Pagination } from "../lib/api/job";
 import { toJobCardJob } from "../lib/jobFormat";
 import type { Job as JobCardJob } from "../components/JobCard";
+import RecentlyViewedStrip from "../components/RecentlyViewedStrip";
 
 const WORK_MODE_OPTIONS: { label: string; value: WorkMode | "" }[] = [
   { label: "Any work mode", value: "" },
@@ -16,8 +17,7 @@ const WORK_MODE_OPTIONS: { label: string; value: WorkMode | "" }[] = [
 export default function JobListingPage() {
   const [searchParams] = useSearchParams();
 
-  // Seed every filter from the URL on first render — this is what makes
-  // Hero's search (and the popular tag buttons) land pre-filtered here.
+
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [location, setLocation] = useState(searchParams.get("location") || "");
   const [workMode, setWorkMode] = useState<WorkMode | "">(
@@ -158,6 +158,8 @@ export default function JobListingPage() {
             )}
           </div>
         </div>
+
+        <RecentlyViewedStrip />
 
         <div className="mt-8">
           {loading ? (

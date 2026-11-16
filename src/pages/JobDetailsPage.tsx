@@ -5,6 +5,7 @@ import ApplyModal from "../components/ApplyModal";
 import { getJobById, type PublicJob } from "../lib/api/job";
 import { formatSalary, formatWorkMode, formatPostedAgo } from "../lib/jobFormat";
 import { isLoggedIn, getUser } from "../lib/auth";
+import { recordJobView } from "../lib/api/recentlyViewed";
 
 export default function JobDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +26,12 @@ export default function JobDetailsPage() {
 
   const user = getUser();
   const isCandidate = isLoggedIn() && user?.role === "CANDIDATE";
+
+  const jobId = job?.id;
+  useEffect(() => {
+    if (!jobId || !isCandidate) return;
+    recordJobView(jobId).catch(() => {});
+  }, [jobId, isCandidate]);
 
   if (loading) {
     return (

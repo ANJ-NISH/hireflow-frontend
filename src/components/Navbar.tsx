@@ -19,6 +19,7 @@ const recruiterMenuLinks = [
 const candidateMenuLinks = [
   { label: "My profile", to: "/candidate/profile" },
   { label: "Saved jobs", to: "/candidate/saved-jobs" },
+  { label: "Recently viewed", to: "/candidate/recently-viewed" },
   { label: "My applications", to: "/candidate/applications" },
 ];
 

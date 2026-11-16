@@ -24,6 +24,7 @@ import AdminComplaintsPage from "../pages/admin/AdminComplaintsPage";
 import CandidateSearchPage from "../pages/recruiter/CandidateSearchPage";
 import NotificationsPage from "../pages/NotificationsPage";
 import NotFoundPage from "../pages/NotFoundPage";
+import RecentlyViewedPage from "../pages/candidate/RecentlyViewedPage";
 
 export function AppRoutes() {
   return (
@@ -48,6 +49,7 @@ export function AppRoutes() {
         <Route path="/candidate/profile" element={<CandidateProfilePage />} />
         <Route path="/candidate/applications" element={<MyApplicationsPage />} />
         <Route path="/candidate/saved-jobs" element={<SavedJobsPage />} />
+        <Route path="/candidate/recently-viewed" element={<RecentlyViewedPage />} />
       </Route>
 
       <Route element={<ProtectedRoute roles={["RECRUITER"]} />}>
