@@ -32,6 +32,10 @@ export default function JobListingPage() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [sort, setSort] = useState<"relevance" | "newest">(
+    searchParams.get("sort") === "newest" ? "newest" : "relevance"
+  );
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(true);
@@ -43,6 +47,7 @@ export default function JobListingPage() {
         workMode: workMode || undefined,
         employmentType: employmentType || undefined,
         skill: skill || undefined,
+        sort: search && sort === "newest" ? "newest" : undefined,
         page,
         limit: 9,
       })
@@ -55,7 +60,7 @@ export default function JobListingPage() {
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [search, location, workMode, employmentType, skill, page]);
+  }, [search, location, workMode, employmentType, skill, sort, page]);
 
   const updateFilter = (setter: (v: any) => void) => (value: any) => {
     setter(value);
@@ -68,6 +73,7 @@ export default function JobListingPage() {
     setWorkMode("");
     setEmploymentType("");
     setSkill("");
+    setSort("relevance");
     setPage(1);
   };
 
@@ -170,9 +176,25 @@ export default function JobListingPage() {
             <p className="text-sm text-ink-soft">No jobs match your filters. Try widening your search.</p>
           ) : (
             <>
-              <p className="text-sm text-ink-soft">
-                {pagination?.total ?? 0} job{pagination?.total === 1 ? "" : "s"} found
-              </p>
+             <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-ink-soft">
+                  {pagination?.total ?? 0} job{pagination?.total === 1 ? "" : "s"} found
+                </p>
+
+                {search && (
+                  <label className="flex items-center gap-2 text-sm text-ink-soft">
+                    Sort by
+                    <select
+                      value={sort}
+                      onChange={(e) => updateFilter(setSort)(e.target.value as "relevance" | "newest")}
+                      className="rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                    >
+                      <option value="relevance">Best match</option>
+                      <option value="newest">Newest</option>
+                    </select>
+                  </label>
+                )}
+              </div>
 
               <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {jobs.map((job) => (

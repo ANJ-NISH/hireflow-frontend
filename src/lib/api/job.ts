@@ -52,6 +52,7 @@ export type JobSearchParams = {
   location?: string;
   workMode?: WorkMode;
   employmentType?: string;
+  sort?: "relevance" | "newest";
   skill?: string;
   page?: number;
   limit?: number;
