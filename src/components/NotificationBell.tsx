@@ -10,8 +10,9 @@ import {
   NOTIFICATIONS_CHANGED_EVENT,
   type AppNotification,
 } from "../lib/api/notification";
+import { subscribeToNotificationStream } from "../lib/notificationStream";
 
-const POLL_INTERVAL_MS = 45_000;
+const FALLBACK_POLL_INTERVAL_MS = 45_000; 
 const DROPDOWN_LIMIT = 8;
 
 export default function NotificationBell() {
@@ -21,6 +22,7 @@ export default function NotificationBell() {
   const [loadingList, setLoadingList] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const streamConnectedRef = useRef(false);
   const navigate = useNavigate();
 
   const refreshCount = useCallback(async () => {
@@ -49,14 +51,14 @@ export default function NotificationBell() {
     refreshCount();
 
     const interval = setInterval(() => {
-      if (!document.hidden) refreshCount();
-    }, POLL_INTERVAL_MS);
+      if (!document.hidden && !streamConnectedRef.current) refreshCount();
+    }, FALLBACK_POLL_INTERVAL_MS);
 
     const onVisibility = () => {
       if (!document.hidden) refreshCount();
     };
     const onChanged = (e: Event) => {
-      if ((e as CustomEvent).detail?.source === "bell") return; 
+      if ((e as CustomEvent).detail?.source === "bell") return;
       refreshCount();
     };
 
@@ -69,6 +71,43 @@ export default function NotificationBell() {
       window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, onChanged);
     };
   }, [refreshCount]);
+
+  useEffect(() => {
+    return subscribeToNotificationStream({
+      onStatus: (connected) => {
+        streamConnectedRef.current = connected;
+      },
+      onEvent: (event) => {
+        switch (event.type) {
+          case "ready":
+            setUnreadCount(event.unreadCount);
+            
+            if (event.reconnect) emitNotificationsChanged("bell");
+            break;
+
+          case "notification":
+            setUnreadCount(event.unreadCount);
+            setItems((prev) =>
+              prev.some((i) => i.id === event.notification.id)
+                ? prev 
+                : [event.notification, ...prev].slice(0, DROPDOWN_LIMIT)
+            );
+            emitNotificationsChanged("bell");
+            break;
+
+          case "unread-count":
+            setUnreadCount(event.unreadCount);
+            break;
+
+          case "resync":
+            refreshCount();
+            emitNotificationsChanged("bell");
+            break;
+        }
+      },
+    });
+  }, [refreshCount]);
+
 
   useEffect(() => {
     if (!open) return;
@@ -98,7 +137,6 @@ export default function NotificationBell() {
     setOpen(false);
 
     if (!n.isRead) {
-      // Update the UI right away; the request catches up in the background
       setItems((prev) => prev.map((i) => (i.id === n.id ? { ...i, isRead: true } : i)));
       setUnreadCount((c) => Math.max(0, c - 1));
       markAsRead(n.id)
